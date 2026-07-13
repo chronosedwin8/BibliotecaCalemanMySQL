@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  /* ================================================
+     PALETA DE MARCA — BiblioCalem / Colegio Alemán
+     ================================================
+     Azul:     #21529B  (Pantone 2935 C)
+     Rojo:     #C03928  (Pantone Red 7626 C)
+     Amarillo: #F0CE2D  (Pantone Yellow 012 C)
+  */
+
+  /* Azul institucional — escala derivada de #21529B */
+  --color-blue-50:  #EEF4FC;
+  --color-blue-100: #D5E5F7;
+  --color-blue-200: #AACAEF;
+  --color-blue-300: #7EAEE6;
+  --color-blue-400: #4C8DD8;
+  --color-blue-500: #3370BE;
+  --color-blue-600: #21529B;
+  --color-blue-700: #1A4280;
+  --color-blue-800: #133265;
+  --color-blue-900: #0D224A;
+
+  /* Rojo institucional — escala derivada de #C03928 */
+  --color-red-50:  #FEF0EE;
+  --color-red-100: #FAD8D3;
+  --color-red-200: #F5B0A7;
+  --color-red-300: #EF887A;
+  --color-red-400: #D9614D;
+  --color-red-500: #CC4333;
+  --color-red-600: #C03928;
+  --color-red-700: #A02E1E;
+  --color-red-800: #7F2416;
+  --color-red-900: #5F1A0F;
+
+  /* Amarillo institucional — escala derivada de #F0CE2D */
+  --color-yellow-50:  #FEFCEC;
+  --color-yellow-100: #FDF5C4;
+  --color-yellow-200: #FBED8A;
+  --color-yellow-300: #F9E050;
+  --color-yellow-400: #F4D636;
+  --color-yellow-500: #F0CE2D;
+  --color-yellow-600: #D4B420;
+  --color-yellow-700: #B09816;
+  --color-yellow-800: #8C7C0E;
+  --color-yellow-900: #686008;
+
+  /* Amber — alias al amarillo de marca */
+  --color-amber-50:  #FEFCEC;
+  --color-amber-100: #FDF5C4;
+  --color-amber-200: #FBED8A;
+  --color-amber-300: #F9E050;
+  --color-amber-400: #F4D636;
+  --color-amber-500: #F0CE2D;
+  --color-amber-600: #D4B420;
+  --color-amber-700: #B09816;
+  --color-amber-800: #8C7C0E;
+  --color-amber-900: #686008;
+
+  /* Indigo — alias al azul de marca */
+  --color-indigo-50:  #EEF4FC;
+  --color-indigo-100: #D5E5F7;
+  --color-indigo-200: #AACAEF;
+  --color-indigo-300: #7EAEE6;
+  --color-indigo-400: #4C8DD8;
+  --color-indigo-500: #3370BE;
+  --color-indigo-600: #21529B;
+  --color-indigo-700: #1A4280;
+  --color-indigo-800: #133265;
+  --color-indigo-900: #0D224A;
+
+  /* Tokens semánticos */
+  --color-primary:   #21529B;
+  --color-secondary: #A6A9AB;
+  --color-accent:    #F0CE2D;
+  --color-danger:    #C03928;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F4F7FB;
+  color: #111827;
+}
