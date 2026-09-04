@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Login from './pages/auth/Login';
+import SsoCallback from './pages/auth/SsoCallback';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import BooksPage from './pages/admin/BooksPage';
 import LoansPage from './pages/admin/LoansPage';
@@ -33,6 +34,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/auth/callback" element={<SsoCallback />} />
       <Route
         path="/"
         element={

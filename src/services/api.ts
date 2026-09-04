@@ -4,6 +4,9 @@
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)
   ?? (import.meta.env.DEV ? 'http://localhost:4001/api' : '/api');
 
+/** Base de la API. El SSO la necesita para salir del SPA con un <a href>. */
+export const API_BASE = BASE;
+
 function getToken(): string | null {
   return localStorage.getItem('auth_token');
 }

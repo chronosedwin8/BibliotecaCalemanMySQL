@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuthStore } from '../../hooks/useAuthStore';
+import { api, API_BASE } from '../../services/api';
 import logoUrl from '../../../logo.avif';
 
 const Login: React.FC = () => {
@@ -11,6 +12,21 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const signIn = useAuthStore((s) => s.signIn);
+  const [params] = useSearchParams();
+  const [ssoDisponible, setSsoDisponible] = useState(false);
+
+  // El backend dice si el SSO está configurado; si no, no se muestra el botón.
+  useEffect(() => {
+    api.get<{ microsoft: boolean }>('/auth/sso/status')
+      .then((r) => setSsoDisponible(r.microsoft))
+      .catch(() => setSsoDisponible(false));
+  }, []);
+
+  // Si el rodeo por Microsoft falló, el backend devuelve el motivo en la URL.
+  useEffect(() => {
+    const err = params.get('sso_error');
+    if (err) toast.error(err, { duration: 6000 });
+  }, [params]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +82,28 @@ const Login: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Bienvenido</h2>
             <p className="mt-1 text-sm text-gray-500">Ingresa tus credenciales para continuar</p>
           </div>
+
+          {ssoDisponible && (
+            <div className="mb-6">
+              <a
+                href={`${API_BASE}/auth/microsoft`}
+                className="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 23 23" aria-hidden="true">
+                  <path fill="#F25022" d="M0 0h11v11H0z" />
+                  <path fill="#7FBA00" d="M12 0h11v11H12z" />
+                  <path fill="#00A4EF" d="M0 12h11v11H0z" />
+                  <path fill="#FFB900" d="M12 12h11v11H12z" />
+                </svg>
+                Continuar con tu cuenta institucional
+              </a>
+              <div className="flex items-center gap-3 mt-6">
+                <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+                <span className="text-xs text-gray-400 uppercase tracking-wide">o con contraseña</span>
+                <span className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+              </div>
+            </div>
+          )}
 
           <form className="space-y-5" onSubmit={handleLogin}>
             <div className="space-y-4">

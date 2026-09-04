@@ -13,6 +13,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   fetchProfile: (userId: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  completeSso: (ticket: string) => Promise<void>;
   signOut: () => Promise<void>;
   initialize: () => () => void;
 }
@@ -45,6 +46,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw new Error('Respuesta inesperada del servidor. Verifica que la API de Biblioteca esté corriendo en VITE_API_URL.');
     }
 
+    setToken(res.token);
+    set({ user: res.profile, profile: res.profile, loading: false });
+  },
+
+  completeSso: async (ticket: string) => {
+    const res = await api.post<{ token: string; profile: Profile }>('/auth/sso/exchange', { ticket });
+    if (!res?.token || !res?.profile) {
+      throw new Error('Respuesta inesperada del servidor al completar el SSO.');
+    }
     setToken(res.token);
     set({ user: res.profile, profile: res.profile, loading: false });
   },
