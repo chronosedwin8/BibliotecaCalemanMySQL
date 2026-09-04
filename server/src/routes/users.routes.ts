@@ -5,6 +5,8 @@ import { query, queryOne, execute } from '../db.js';
 import { requireAuth, requireRole, type AuthRequest } from '../auth/middleware.js';
 import { hashPassword } from '../auth/password.js';
 import { uploadObject } from '../s3.js';
+import { syncStudentsFromPhidias } from '../services/studentSync.js';
+import { phidiasIsConfigured, PhidiasError } from '../services/phidias.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
@@ -139,6 +141,36 @@ router.post('/:id/avatar', requireRole('admin'), upload.single('file'), async (r
     await execute('UPDATE profiles SET avatar_url=?, updated_at=NOW() WHERE id=?', [finalUrl, req.params.id]);
     res.json({ url: finalUrl });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Error al subir avatar' }); }
+});
+
+// GET /users/phidias/status — ¿está configurada la integración?
+router.get('/phidias/status', requireRole('admin'), (_req, res) => {
+  res.json({ configured: phidiasIsConfigured() });
+});
+
+// POST /users/phidias/sync — sincroniza estudiantes desde Phidias.
+// Body opcional: { dryRun?: boolean, desactivarAusentes?: boolean, year?: number }
+router.post('/phidias/sync', requireRole('admin'), async (req, res) => {
+  const { dryRun, desactivarAusentes, year } = (req.body ?? {}) as {
+    dryRun?: boolean; desactivarAusentes?: boolean; year?: number;
+  };
+
+  try {
+    const result = await syncStudentsFromPhidias({
+      dryRun: dryRun === true,
+      desactivarAusentes: desactivarAusentes !== false,
+      year,
+    });
+    res.json(result);
+  } catch (err) {
+    if (err instanceof PhidiasError) {
+      console.error('phidias sync:', err.message);
+      res.status(502).json({ error: err.message });
+      return;
+    }
+    console.error('phidias sync:', err);
+    res.status(500).json({ error: 'Error sincronizando con Phidias' });
+  }
 });
 
 // POST /users/bulk

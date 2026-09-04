@@ -29,6 +29,21 @@ export interface BulkImportUserResult {
   errors: { row: number; codigo: string; message: string }[];
 }
 
+// ─── Sincronización con Phidias ──────────────────────────────────────────────
+
+export interface PhidiasSyncResult {
+  dryRun: boolean;
+  leidosDeApi: number;
+  matriculasActivas: number;
+  creados: number;
+  actualizados: number;
+  sinCambios: number;
+  desactivados: number;
+  omitidos: { email: string | null; codigo: string | null; nombre: string; motivo: string }[];
+  errores: { email: string | null; motivo: string }[];
+  duracionMs: number;
+}
+
 export const usersService = {
   async getAll(filters?: UsersFilter): Promise<UserProfile[]> {
     const params = new URLSearchParams();
@@ -70,6 +85,16 @@ export const usersService = {
 
   async getDistinctCourses(): Promise<string[]> {
     return api.get<string[]>('/users/courses');
+  },
+
+  /** Simula la sincronización con Phidias sin escribir nada. */
+  async phidiasPreview(): Promise<PhidiasSyncResult> {
+    return api.post<PhidiasSyncResult>('/users/phidias/sync', { dryRun: true });
+  },
+
+  /** Aplica la sincronización de estudiantes desde Phidias. */
+  async phidiasSync(): Promise<PhidiasSyncResult> {
+    return api.post<PhidiasSyncResult>('/users/phidias/sync', { dryRun: false });
   },
 
   async bulkImport(

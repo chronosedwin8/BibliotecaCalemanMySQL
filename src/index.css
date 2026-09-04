@@ -69,11 +69,72 @@
   --color-indigo-800: #133265;
   --color-indigo-900: #0D224A;
 
+  /* ── Colores secundarios del manual ─────────────────── */
+  /* Plata #A6A9AB · Coral #F98080 · Vainilla · Celeste #8BD5F2
+     Uso: detalles y textos de apoyo. Nunca sustituyen a los
+     primarios ni se usan en el logotipo. */
+  --color-plata-50:  #F6F6F7;
+  --color-plata-100: #E9EAEA;
+  --color-plata-200: #D3D4D5;
+  --color-plata-300: #BCBFC0;
+  --color-plata-400: #A6A9AB;
+  --color-plata-500: #8B8E90;
+  --color-plata-600: #6F7274;
+  --color-plata-700: #545658;
+  --color-plata-800: #3A3B3D;
+  --color-plata-900: #1F2021;
+
+  --color-coral-100: #FDE2E2;
+  --color-coral-300: #FBB1B1;
+  --color-coral-500: #F98080;
+  --color-coral-700: #D45A5A;
+
+  --color-vainilla-100: #FDF8E4;
+  --color-vainilla-300: #F9EFC4;
+  --color-vainilla-500: #F5E7A8;
+  --color-vainilla-700: #D9C878;
+
+  --color-celeste-100: #E4F5FC;
+  --color-celeste-300: #B9E5F7;
+  --color-celeste-500: #8BD5F2;
+  --color-celeste-700: #5BB2D4;
+
+  /* Purple / violet — alias al CELESTE de marca.
+     El manual no contempla morados; redirigirlos aquí mantiene
+     los componentes existentes dentro de la identidad. */
+  --color-purple-50:  #F0FAFE;
+  --color-purple-100: #E4F5FC;
+  --color-purple-200: #C9EBF9;
+  --color-purple-300: #B9E5F7;
+  --color-purple-400: #A2DDF4;
+  --color-purple-500: #8BD5F2;
+  --color-purple-600: #6FC0E0;
+  --color-purple-700: #5BB2D4;
+  --color-purple-800: #3F8CAB;
+  --color-purple-900: #2A6580;
+
+  --color-violet-50:  #F0FAFE;
+  --color-violet-100: #E4F5FC;
+  --color-violet-200: #C9EBF9;
+  --color-violet-300: #B9E5F7;
+  --color-violet-400: #A2DDF4;
+  --color-violet-500: #8BD5F2;
+  --color-violet-600: #6FC0E0;
+  --color-violet-700: #5BB2D4;
+  --color-violet-800: #3F8CAB;
+  --color-violet-900: #2A6580;
+
+  /* Negro institucional — Pantone Black 6 C */
+  --color-tinta: #000000;
+
   /* Tokens semánticos */
   --color-primary:   #21529B;
   --color-secondary: #A6A9AB;
   --color-accent:    #F0CE2D;
   --color-danger:    #C03928;
+  --color-coral:     #F98080;
+  --color-vainilla:  #F5E7A8;
+  --color-celeste:   #8BD5F2;
 }
 
 *,
@@ -98,4 +159,48 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #F4F7FB;
   color: #111827;
+}
+
+/* ================================================================
+   UTILIDADES DE MARCA — Manual de identidad Colegio Alemán
+   ================================================================ */
+
+/* Línea gráfica: patrón de iconos Colombia/Alemania en blanco.
+   Se usa siempre SOBRE un fondo de color de marca, nunca solo. */
+.brand-pattern {
+  background-image: url('/brand/pattern.png');
+  background-size: 620px;
+  background-repeat: repeat;
+}
+
+.brand-pattern-xs { background-size: 260px; }
+.brand-pattern-sm { background-size: 420px; }
+.brand-pattern-lg { background-size: 820px; }
+
+/* Franja tricolor institucional (azul · amarillo · rojo) */
+.brand-rule {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    var(--color-primary) 0 33.33%,
+    var(--color-accent)  33.33% 66.66%,
+    var(--color-danger)  66.66% 100%
+  );
+}
+
+/* Superficie azul de marca con la línea gráfica encima */
+.brand-surface {
+  background-color: var(--color-primary);
+  position: relative;
+  isolation: isolate;
+}
+.brand-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/brand/pattern.png');
+  background-size: 620px;
+  background-repeat: repeat;
+  opacity: 0.12;
 }

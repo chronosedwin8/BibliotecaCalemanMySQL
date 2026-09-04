@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { RefreshCw, AlertCircle, Plus, X, Loader2, CheckCircle, Search, BookMarked, Clock, XCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, Plus, X, Loader2, CheckCircle, Search, BookMarked, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { format, formatDistanceToNow, addDays, isPast } from 'date-fns';
 import { es } from 'date-fns/locale';

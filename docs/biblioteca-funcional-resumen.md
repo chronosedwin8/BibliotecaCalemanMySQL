@@ -2,7 +2,9 @@
 
 ## 🛠️ Stack Tecnológico
 - **Frontend:** Vite + React + TypeScript
-- **Base de Datos:** Supabase (PostgreSQL + Auth + Storage)
+- **Base de Datos:** MySQL
+- **Backend:** Express + TypeScript (JWT + bcrypt)
+- **Storage:** AWS S3
 - **Estilos:** TailwindCSS
 - **Librerías:**
   - React Router DOM, React Hook Form, Zod
@@ -245,7 +247,7 @@ id, clave, valor, tipo_dato, descripcion
 
 **Configuración:**
 - Usuario puede activar/desactivar por tipo
-- CRON jobs con Supabase Edge Functions
+- Jobs programados en el backend Express (setInterval / cron)
 
 ### 📍 10. UBICACIÓN FÍSICA
 - Nomenclatura: "Estante A, Fila 3, Sección Literatura"
@@ -310,10 +312,10 @@ id, clave, valor, tipo_dato, descripcion
 
 ## 🔒 Seguridad
 
-**Supabase RLS (Row Level Security):**
-- Usuarios solo ven sus propios datos
-- Admins ven todos los datos
-- Políticas por tabla según rol
+**Autorización en el backend:**
+- JWT firmado por el servidor; contraseñas con bcrypt
+- Middleware `requireAuth` / `requireRole` por endpoint
+- Usuarios solo ven sus propios datos; los admin ven todos
 
 **Triggers en Base de Datos:**
 - Auto-crear perfil al registrarse
@@ -321,7 +323,7 @@ id, clave, valor, tipo_dato, descripcion
 - Calcular métricas automáticamente
 - Generar multas automáticamente
 
-**Edge Functions (CRON Jobs):**
+**Jobs programados (backend):**
 - Enviar recordatorios diarios (8 AM)
 - Generar multas para vencidos
 - Expirar reservas antiguas (48h)
@@ -358,7 +360,7 @@ id, clave, valor, tipo_dato, descripcion
 ## ✅ MVP - Funcionalidades Esenciales
 
 ### Fase 1 - Core (2-3 semanas)
-1. Setup proyecto (Vite + React + TypeScript + Supabase)
+1. Setup proyecto (Vite + React + TypeScript + Express + MySQL)
 2. Autenticación y roles
 3. CRUD de libros con códigos de barras
 4. Sistema de préstamos y devoluciones
@@ -401,7 +403,7 @@ src/
 │   ├── useLoans.ts
 │   └── useStats.ts
 ├── services/
-│   ├── supabase.ts
+│   ├── api.ts
 │   ├── auth.service.ts
 │   ├── books.service.ts
 │   └── loans.service.ts
@@ -438,7 +440,7 @@ src/
 - Usuario recibe email de confirmación
 
 ### 4. Sistema envía recordatorios
-- Edge Function corre diariamente
+- Job del backend corre diariamente
 - Busca préstamos con vencimiento en 2 días
 - Envía emails automáticos
 
@@ -449,7 +451,7 @@ src/
 - Notifica al siguiente en cola de reservas
 
 ### 6. Sistema genera estadísticas
-- Edge Function corre cada noche
+- Job del backend corre cada noche
 - Calcula métricas del día
 - Actualiza tablas de analytics
 - Admin ve reportes actualizados
@@ -458,12 +460,12 @@ src/
 
 ## 🎯 Configuración Inicial Recomendada
 
-**Supabase:**
-1. Crear proyecto
-2. Ejecutar SQL para crear todas las tablas
-3. Configurar RLS en cada tabla
+**MySQL + backend:**
+1. Crear la base de datos `biblioteca`
+2. Ejecutar `server/db/schema.sql` para crear todas las tablas
+3. Configurar `server/.env` (DB_*, JWT_SECRET, AWS_*)
 4. Crear triggers y funciones
-5. Configurar Auth (email/password)
+5. Crear el admin: `scripts/create-admin.ts`
 6. Configurar Storage (para portadas de libros)
 
 **Valores Iniciales de Configuración:** ' debe haber un panel para configurar esto en el admin'
@@ -483,9 +485,9 @@ src/
 **Básico (MVP):**
 - [ ] Setup Vite + React + TypeScript
 - [ ] Configurar Tailwind
-- [ ] Crear proyecto Supabase
-- [ ] Crear todas las tablas
-- [ ] Configurar RLS y triggers
+- [ ] Crear la base de datos MySQL
+- [ ] Crear todas las tablas (`server/db/schema.sql`)
+- [ ] Configurar middleware de auth y triggers
 - [ ] Login/Registro
 - [ ] CRUD libros
 - [ ] Generación de códigos de barras
@@ -512,9 +514,9 @@ src/
 1. **Empezar con tablas simples:** profiles, books, loans
 2. **Implementar autenticación primero:** base para todo el sistema
 3. **Hacer CRUD de libros antes de préstamos:** necesitas libros para prestar
-4. **Usar React Query para cache:** evita llamadas innecesarias a Supabase
-5. **Implementar búsqueda full-text en PostgreSQL:** mejor performance
-6. **Usar Edge Functions para tareas programadas:** recordatorios, multas
+4. **Usar React Query para cache:** evita llamadas innecesarias a la API
+5. **Implementar búsqueda FULLTEXT en MySQL:** mejor performance
+6. **Usar jobs del backend para tareas programadas:** recordatorios, multas
 7. **Mantener código de barras único:** validar en base de datos
 8. **Testear flujo completo:** préstamo → recordatorio → devolución → multa
 

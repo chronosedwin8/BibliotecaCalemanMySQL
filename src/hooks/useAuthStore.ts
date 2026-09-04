@@ -5,7 +5,7 @@ import type { Tables } from '../types/database.types';
 type Profile = Tables<'profiles'>;
 
 interface AuthState {
-  user: Profile | null;       // unified: no longer a separate Supabase User object
+  user: Profile | null;
   profile: Profile | null;
   loading: boolean;
   setUser: (user: Profile | null) => void;
@@ -37,6 +37,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signIn: async (email: string, password: string) => {
     const res = await api.post<{ token: string; profile: Profile }>('/auth/login', { email, password });
+
+    // Si la respuesta no trae token+perfil no es nuestra API (p. ej. otro
+    // servicio ocupando el puerto). Fallar aquí evita un "login" que parece
+    // exitoso pero deja la sesión vacía y rebota al /login.
+    if (!res?.token || !res?.profile) {
+      throw new Error('Respuesta inesperada del servidor. Verifica que la API de Biblioteca esté corriendo en VITE_API_URL.');
+    }
+
     setToken(res.token);
     set({ user: res.profile, profile: res.profile, loading: false });
   },

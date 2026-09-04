@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS locations (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_spanish2_ci;
 
 -- ------------------------------------------------------------
--- 3. profiles  (fusiona auth.users + public.profiles de Supabase)
+-- 3. profiles  (usuarios del sistema + credenciales)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS profiles (
   id                    CHAR(36)     NOT NULL PRIMARY KEY,

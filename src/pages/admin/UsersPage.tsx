@@ -5,7 +5,7 @@ import {
   Plus, Search, Users, Loader2, Pencil, X, Upload,
   UserCheck, UserX, Filter, ChevronDown, ChevronUp,
   FileSpreadsheet, AlertTriangle, CheckCircle2, RefreshCw, Camera,
-  Download, Table2,
+  Download, Table2, GraduationCap,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
@@ -15,8 +15,8 @@ import {
   type CreateUserData,
   type UsersFilter,
   type BulkImportUserResult,
+  type PhidiasSyncResult,
 } from '../../services/users.service';
-const adminClientReady = true; // backend always available
 import { catalogValuesService } from '../../services/catalogValues.service';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -386,16 +386,6 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ user, onClose, onSaved })
             </div>
           )}
 
-          {!adminClientReady && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 flex gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>
-                Falta <code>VITE_SUPABASE_SERVICE_ROLE_KEY</code> en el .env.
-                La creación de usuarios requiere esa clave.
-              </span>
-            </div>
-          )}
-
           {/* Nombre completo */}
           <div>
             <label className="block text-sm font-medium mb-1">Nombre completo *</label>
@@ -613,17 +603,6 @@ const ExcelUserImportPanel: React.FC<ExcelImportPanelProps> = ({ onImportDone })
 
   return (
     <div className="space-y-5">
-      {/* Warning */}
-      {!adminClientReady && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
-          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800">
-            <p className="font-semibold">Configuración requerida</p>
-            <p>Agrega <code className="bg-amber-100 px-1 rounded">VITE_SUPABASE_SERVICE_ROLE_KEY</code> en el <code className="bg-amber-100 px-1 rounded">.env</code> para crear usuarios.</p>
-          </div>
-        </div>
-      )}
-
       {/* Top bar */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div>
@@ -764,7 +743,7 @@ const ExcelUserImportPanel: React.FC<ExcelImportPanelProps> = ({ onImportDone })
               </button>
               <button
                 onClick={handleImport}
-                disabled={importing || validRows.length === 0 || !adminClientReady}
+                disabled={importing || validRows.length === 0}
                 className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
               >
                 {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -810,8 +789,146 @@ const ExcelUserImportPanel: React.FC<ExcelImportPanelProps> = ({ onImportDone })
 };
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Sincronización con Phidias ──────────────────────────────────────────────
+
+const PhidiasSyncModal: React.FC<{ onClose: () => void; onDone: () => void }> = ({ onClose, onDone }) => {
+  const [preview, setPreview] = useState<PhidiasSyncResult | null>(null);
+  const [result,  setResult]  = useState<PhidiasSyncResult | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [aplicando, setAplicando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    usersService.phidiasPreview()
+      .then(setPreview)
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Error consultando Phidias'))
+      .finally(() => setCargando(false));
+  }, []);
+
+  const aplicar = async () => {
+    setAplicando(true);
+    try {
+      const r = await usersService.phidiasSync();
+      setResult(r);
+      toast.success(`${r.creados} creados · ${r.actualizados} actualizados · ${r.desactivados} desactivados`);
+      onDone();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Error sincronizando');
+    } finally {
+      setAplicando(false);
+    }
+  };
+
+  const datos = result ?? preview;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-lg shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-blue-600" />
+            Sincronizar con Phidias
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {cargando && (
+            <div className="flex items-center gap-3 text-sm text-gray-500 py-6 justify-center">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Consultando estudiantes matriculados…
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 flex gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {datos && (
+            <>
+              <p className="text-sm text-gray-500">
+                {result
+                  ? 'Sincronización aplicada.'
+                  : `Phidias reporta ${datos.matriculasActivas} matrículas activas. Esto es lo que se hará:`}
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  ['Se crearán',      datos.creados,       'text-green-700 bg-green-50 border-green-200'],
+                  ['Se actualizarán', datos.actualizados,  'text-blue-700 bg-blue-50 border-blue-200'],
+                  ['Sin cambios',     datos.sinCambios,    'text-gray-600 bg-gray-50 border-gray-200'],
+                  ['Se desactivarán', datos.desactivados,  'text-amber-800 bg-amber-50 border-amber-200'],
+                ] as const).map(([label, n, cls]) => (
+                  <div key={label} className={`border rounded-lg px-3 py-2 ${cls}`}>
+                    <p className="text-2xl font-bold leading-tight">{n}</p>
+                    <p className="text-xs font-medium">{result ? label.replace('Se ', '').replace('án', 'ados') : label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {datos.desactivados > 0 && !result && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 flex gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    {datos.desactivados} estudiantes de la base ya no aparecen matriculados en Phidias.
+                    Pasarán a <strong>inactivo</strong>: no podrán iniciar sesión, pero se conserva todo
+                    su historial de préstamos y multas. Es reversible.
+                  </span>
+                </div>
+              )}
+
+              {datos.omitidos.length > 0 && (
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
+                    {datos.omitidos.length} omitidos (ver detalle)
+                  </summary>
+                  <ul className="mt-2 space-y-1 max-h-32 overflow-y-auto text-gray-600">
+                    {datos.omitidos.map((o, i) => (
+                      <li key={i}>
+                        <span className="font-medium">{o.nombre || o.codigo || '—'}</span> · {o.motivo}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
+              {datos.errores.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-800">
+                  {datos.errores.length} con error. Primero: {datos.errores[0].motivo}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800">
+            {result ? 'Cerrar' : 'Cancelar'}
+          </button>
+          {!result && (
+            <button
+              onClick={aplicar}
+              disabled={!preview || aplicando || !!error}
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+            >
+              {aplicando ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+              {aplicando ? 'Sincronizando…' : 'Aplicar sincronización'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const UsersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('usuarios');
+  const [showPhidias, setShowPhidias] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filters, setFilters] = useState<UsersFilter>({});
@@ -919,6 +1036,14 @@ const UsersPage: React.FC = () => {
           <p className="text-gray-500 text-sm">Administra estudiantes, docentes y administradores</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPhidias(true)}
+            className="flex items-center gap-2 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
+            title="Actualizar estudiantes desde Phidias (Estudiantes Matriculados)"
+          >
+            <GraduationCap className="w-4 h-4 text-blue-600" />
+            Sincronizar Phidias
+          </button>
           <button
             onClick={exportUsers}
             className="flex items-center gap-2 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors"
@@ -1178,6 +1303,14 @@ const UsersPage: React.FC = () => {
           user={editingUser}
           onClose={() => setShowModal(false)}
           onSaved={onSaved}
+        />
+      )}
+
+      {/* Modal sincronización Phidias */}
+      {showPhidias && (
+        <PhidiasSyncModal
+          onClose={() => setShowPhidias(false)}
+          onDone={() => queryClient.invalidateQueries({ queryKey: ['users'] })}
         />
       )}
     </div>

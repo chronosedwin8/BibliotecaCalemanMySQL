@@ -1,21 +1,48 @@
-import bcrypt from 'bcryptjs';
-import mysql from 'mysql2/promise';
+/**
+ * Crea o actualiza un usuario administrador.
+ *
+ * Uso:
+ *   node node_modules/tsx/dist/cli.mjs scripts/create-admin.ts <email> <password> [nombre]
+ *
+ * Si el email ya existe se le asigna rol admin, estado activo y se
+ * restablece la contraseña.
+ */
+import 'dotenv/config';
 import { randomUUID } from 'crypto';
+import { pool, queryOne } from '../src/db.js';
+import { hashPassword } from '../src/auth/password.js';
 
-const db = await mysql.createConnection({
-  host: 'localhost', user: 'root', password: '1004',
-  database: 'biblioteca', charset: 'utf8mb4',
-});
+const [emailArg, passwordArg, ...nameParts] = process.argv.slice(2);
 
-const hash = await bcrypt.hash('Colegio123', 12);
-const id = randomUUID();
+if (!emailArg || !passwordArg) {
+  console.error('Uso: create-admin.ts <email> <password> [nombre completo]');
+  process.exit(1);
+}
 
-await db.execute(
-  `INSERT INTO profiles (id,email,full_name,role,estado,password_hash)
-   VALUES (?,?,?,?,?,?)
-   ON DUPLICATE KEY UPDATE full_name=VALUES(full_name)`,
-  [id, 'admin@biblioteca.com', 'Administrador', 'admin', 'activo', hash],
+const email    = emailArg.toLowerCase().trim();
+const fullName = nameParts.join(' ').trim() || 'Administrador';
+const hash     = await hashPassword(passwordArg);
+
+const existing = await queryOne<{ id: string }>(
+  'SELECT id FROM profiles WHERE email = ?',
+  [email],
 );
 
-console.log('✅ Admin creado — email: admin@biblioteca.com  password: Colegio123');
-await db.end();
+if (existing) {
+  await pool.execute(
+    `UPDATE profiles
+        SET role = 'admin', estado = 'activo', password_hash = ?
+      WHERE id = ?`,
+    [hash, existing.id],
+  );
+  console.log(`✅ Admin actualizado — ${email} (contraseña restablecida)`);
+} else {
+  await pool.execute(
+    `INSERT INTO profiles (id, email, full_name, role, estado, password_hash)
+     VALUES (?, ?, ?, 'admin', 'activo', ?)`,
+    [randomUUID(), email, fullName, hash],
+  );
+  console.log(`✅ Admin creado — ${email}`);
+}
+
+await pool.end();

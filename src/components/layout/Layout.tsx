@@ -45,9 +45,11 @@ const Layout: React.FC = () => {
   return (
     <div className="flex h-screen bg-[#F4F7FB] dark:bg-gray-900 w-full">
       {/* Sidebar — azul institucional */}
-      <aside className="w-64 flex-shrink-0 flex flex-col bg-[#21529B] border-r border-[#1A4280]">
+      <aside className="w-64 flex-shrink-0 flex flex-col bg-[#21529B] border-r border-[#1A4280] relative">
+        {/* Línea gráfica institucional */}
+        <div className="absolute inset-0 brand-pattern brand-pattern-xs opacity-[0.06] pointer-events-none" aria-hidden="true" />
         {/* Logo */}
-        <div className="px-5 py-5 flex items-center gap-3 border-b border-white/10">
+        <div className="relative px-5 py-5 flex items-center gap-3 border-b border-white/10">
           <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
             <img src={logoUrl} alt="BiblioCalem" className="w-8 h-8 object-contain" />
           </div>
@@ -58,7 +60,7 @@ const Layout: React.FC = () => {
         </div>
 
         {/* Navegación */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        <nav className="relative flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {visibleItems.map((item) => {
             const isActive = location.pathname === item.path &&
               (!item.to || location.search === `?tab=${item.to?.split('tab=')[1] ?? ''}`);
@@ -85,7 +87,7 @@ const Layout: React.FC = () => {
         </nav>
 
         {/* Footer — usuario + salir */}
-        <div className="px-3 py-3 border-t border-white/10 space-y-1">
+        <div className="relative px-3 py-3 border-t border-white/10 space-y-1">
           <div className="px-3 py-2 rounded-lg bg-white/8">
             <p className="text-xs font-semibold text-white truncate">{profile?.full_name || 'Usuario'}</p>
             <p className="text-[10px] text-blue-200 capitalize">{profile?.role || 'Estudiante'}</p>
@@ -116,6 +118,7 @@ const Layout: React.FC = () => {
             </div>
           </div>
         </header>
+        <div className="brand-rule" aria-hidden="true" />
 
         <section className="flex-1 overflow-y-auto p-8">
           <Outlet />

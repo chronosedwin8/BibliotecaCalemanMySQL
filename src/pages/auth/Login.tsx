@@ -28,14 +28,11 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#F4F7FB] dark:bg-gray-900">
+    <div className="min-h-screen flex bg-[#F8FAFC] dark:bg-gray-900 relative">
       {/* Panel lateral de marca */}
       <div className="hidden lg:flex lg:w-2/5 bg-[#21529B] flex-col items-center justify-center p-12 relative overflow-hidden">
-        {/* Fondo decorativo */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white" />
-          <div className="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-white" />
-        </div>
+        {/* Línea gráfica institucional */}
+        <div className="absolute inset-0 brand-pattern opacity-[0.13]" aria-hidden="true" />
         <div className="relative z-10 text-center">
           <div className="mx-auto w-28 h-28 bg-white rounded-2xl shadow-2xl flex items-center justify-center mb-8">
             <img src={logoUrl} alt="Logo" className="w-24 h-24 object-contain" />
@@ -50,7 +47,9 @@ const Login: React.FC = () => {
       </div>
 
       {/* Formulario de ingreso */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 relative">
+        {/* Franja tricolor institucional */}
+        <div className="absolute top-0 inset-x-0 brand-rule" aria-hidden="true" />
         <div className="w-full max-w-sm">
           {/* Logo móvil */}
           <div className="lg:hidden flex items-center gap-3 mb-8">

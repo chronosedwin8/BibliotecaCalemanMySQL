@@ -22,7 +22,17 @@ import reservasRoutes, { expireOldReservas } from './routes/reservas.routes.js';
 const app  = express();
 const PORT = Number(process.env.PORT ?? 4000);
 
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? '*', credentials: true }));
+// CORS_ORIGIN acepta varios orígenes separados por coma (el puerto de Vite
+// cambia si el 3000 está ocupado). '*' permite cualquiera.
+const corsOrigins = (process.env.CORS_ORIGIN ?? '*')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: corsOrigins.includes('*') ? true : corsOrigins,
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/api/auth',       authRoutes);

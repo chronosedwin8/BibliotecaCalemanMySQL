@@ -1,6 +1,8 @@
-// En desarrollo: http://localhost:4000/api
-// En producción (CapRover): /api  (mismo servidor, sin CORS)
-const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000/api';
+// Desarrollo: la API vive en otro puerto.
+// Producción: el mismo Express sirve el frontend, así que /api es del mismo
+// origen y no hay CORS. VITE_API_URL puede sobrescribir ambos casos.
+const BASE = (import.meta.env.VITE_API_URL as string | undefined)
+  ?? (import.meta.env.DEV ? 'http://localhost:4001/api' : '/api');
 
 function getToken(): string | null {
   return localStorage.getItem('auth_token');

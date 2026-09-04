@@ -1,0 +1,25 @@
+# Todo lo que no debe entrar al contexto de build.
+.git
+.github
+node_modules
+server/node_modules
+.claude
+docs
+sql
+supabase
+scripts
+
+# Datos y respaldos — pesados y sin uso en producción
+*.xlsx
+*.csv
+*.sql
+*.log
+
+# Secretos: las variables se inyectan desde Coolify
+.env
+.env.*
+server/.env
+server/.env.*
+
+# Artefactos locales que se regeneran en CI
+dist/.vite

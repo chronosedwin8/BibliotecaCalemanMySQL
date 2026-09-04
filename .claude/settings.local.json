@@ -2,7 +2,6 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(node scripts/deploy-functions.mjs)",
       "Bash(npm run:*)",
       "Bash(find /c/Users/eortiz/Desktop/biblioteca -not -path */node_modules/* -not -path */dist/* -not -path */.git/* -type d)",
       "Bash(grep -E '\\\\.\\(ts|tsx|sql|json|env|css\\)$')",

@@ -1,38 +1,28 @@
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Instalar deps del frontend
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps
-
-# Copiar fuentes y construir el frontend
-COPY . .
-# VITE_API_URL vacío → usará /api (mismo servidor), sin CORS
-ENV VITE_API_URL=/api
-RUN npm run build
-
-# Instalar deps del backend
-WORKDIR /app/server
-COPY server/package*.json ./
-RUN npm ci --legacy-peer-deps
-
-# ── Imagen final ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Imagen de EJECUCIÓN. No compila nada.
+#
+# El frontend (dist/) y el backend (server/dist/) llegan ya construidos por
+# GitHub Actions. El servidor sólo instala dependencias de producción y arranca.
+# Compilar en el servidor agota la memoria de la instancia.
+# ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine
 
+ENV NODE_ENV=production
 WORKDIR /app/server
 
-# Copiar node_modules del backend
-COPY --from=builder /app/server/node_modules ./node_modules
-COPY --from=builder /app/server/package*.json ./
+# Dependencias de producción del backend
+COPY server/package*.json ./
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
-# Copiar código fuente del servidor
-COPY server/src ./src
-COPY server/.env.example ./.env.example
+# Backend ya compilado a JavaScript
+COPY server/dist ./dist
 
-# Copiar el build del frontend al lugar que lee el servidor (../dist)
-COPY --from=builder /app/dist ../dist
+# Frontend ya construido. El servidor lo sirve desde ../../dist  (= /app/dist)
+COPY dist /app/dist
 
 EXPOSE 4000
 
-CMD ["node", "node_modules/tsx/dist/cli.mjs", "src/index.ts"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4000)+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["node", "dist/index.js"]
