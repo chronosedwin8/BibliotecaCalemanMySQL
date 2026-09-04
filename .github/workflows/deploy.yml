@@ -83,7 +83,8 @@ jobs:
             echo "Sin COOLIFY_TOKEN: imagen publicada, despliegue omitido."
             exit 0
           fi
-          code=$(curl -sS -o /tmp/deploy.json -w '%{http_code}' -X GET \
+          # Coolify >= 4.3 exige POST en /deploy (antes era GET).
+          code=$(curl -sS -o /tmp/deploy.json -w '%{http_code}' -X POST \
             "$COOLIFY_URL/api/v1/deploy?uuid=$COOLIFY_APP&force=true" \
             -H "Authorization: Bearer $COOLIFY_TOKEN")
           cat /tmp/deploy.json
